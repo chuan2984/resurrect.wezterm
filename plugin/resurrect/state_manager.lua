@@ -233,4 +233,30 @@ function pub.set_max_nlines(max_nlines)
 	require("resurrect.pane_tree").max_nlines = max_nlines
 end
 
+---Get list of saved states by type
+---@param state_type string "workspace", "window", or "tab"
+---@return string[] list of state names (with + converted back to / for paths)
+function pub.get_saved_states(state_type)
+	local saved_states = {}
+	local state_dir = pub.save_state_dir .. utils.separator .. state_type
+
+	-- Use wezterm.read_dir to get files
+	local success, files = pcall(wezterm.read_dir, state_dir)
+	if success and files then
+		for _, file_path in ipairs(files) do
+			-- Extract state name from filename (basename without .json extension)
+			local state_name = file_path:match("([^" .. utils.separator .. "]+)%.json$")
+			if state_name then
+				-- Convert + back to / (or \ on Windows) to get the original workspace/window/tab name
+				local original_name = state_name:gsub("%+", utils.separator)
+				table.insert(saved_states, original_name)
+			end
+		end
+	else
+		wezterm.log_warn("Could not read resurrect state directory: " .. state_dir)
+	end
+
+	return saved_states
+end
+
 return pub
