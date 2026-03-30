@@ -221,9 +221,9 @@ local function insert_choices(stdout, opts)
 				end
 			end
 
-			-- Calculating the maximum file length
-			local filename_len = utils.utf8len(file) + fmt_cost[type] -- we keep this so we don't have to measure it later
-			max_length = math.max(max_length, filename_len)
+		-- Calculating the maximum file length
+		local filename_len = utils.utf8len(file) + (fmt_cost[type] or 0) -- we keep this so we don't have to measure it later
+		max_length = math.max(max_length, filename_len)
 
 			local date = ""
 			if opts.show_state_with_date then
@@ -234,8 +234,10 @@ local function insert_choices(stdout, opts)
 			end
 			local date_len = utils.utf8len(utils.strip_format_esc_seq(date))
 
-			-- collecting all relevant information about the file
-			local fmt = opts[string.format("fmt_%s", type)]
+		-- collecting all relevant information about the file
+		local fmt = opts[string.format("fmt_%s", type)]
+		-- Ensure files[type] exists before inserting
+		if files[type] then
 			table.insert(files[type], {
 				id = type .. utils.separator .. file,
 				filename = file,
@@ -245,6 +247,7 @@ local function insert_choices(stdout, opts)
 				fmt = fmt,
 			})
 		end
+	end
 	end
 
 	local available_width
